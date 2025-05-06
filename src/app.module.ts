@@ -5,13 +5,21 @@ import { CatsController } from './cats/cats.controller';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { MongooseModule } from '@nestjs/mongoose';
-
+import { AuthModule } from './auth/auth.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/auth'),
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRootAsync({
+      useFactory: async (config: ConfigService) => ({
+        uri: config.getOrThrow<string>('MONGO_URI'),
+      }),
+      inject: [ConfigService],
+    }),
     UsersModule,
     ProductsModule,
+    AuthModule,
   ],
   controllers: [AppController, CatsController],
   providers: [AppService],
